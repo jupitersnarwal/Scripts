@@ -1,0 +1,136 @@
+#!/bin/bash
+#
+# Simple firewall automation.
+# This script closes a list of ports.
+# Future implementation may include finding
+# any processes using the listed ports and
+# killing.
+#
+# HOW TO USE:
+# ./flock $portsfile
+# Give a file with a list of port numbers to close.
+# The file will must be line delimited 
+# To prevent good ports from being closed, add good
+# ports to goodPorts array 
+#
+# WILL NOT CHECK TO SEE IF RULE ALREADY EXISTS BEFORE
+# CREATING NEW RULES
+#
+# TODO:
+# Add commands to find port processes and kill them
+#
+
+file=$1
+
+# list all the ports we wish to close
+function printPorts() {
+	echo
+	echo **printing ports
+	local i
+	for i in ${ports[*]} ; do
+		echo $i
+	done
+}
+
+# list all of the found process ids
+function printPID() {
+	echo
+	echo **listing PIDS
+	local i
+	for i in ${pids[*]} ; do
+		echo $i
+	done
+}
+
+# read the file of ports
+function readFile() {
+	echo
+	echo **reading file
+	OLD_IFS=$IFS
+	IFS=$'\n'
+	ports=($(cat $file))
+	#echo length ${#ports[*]}
+	IFS=$OLD_IFS
+}
+
+# reduce user error by making sure a port in the close
+# list is one we want to close
+function checkValid() {
+	local i
+	# run through the array of good ports
+	# and compare to the port in question
+	for i in ${goodPorts[*]} ; do
+		if [ $1 -eq $i ] ; then
+			# ports match.  return false and do nothing
+			echo !  ! $1 will not be closed. on goodlist.
+			return 1 # 1 is false
+		fi
+	done
+	# no ports matched
+	# the port is valid
+	return 0 # 0 is true
+}
+
+function killProcess() {
+	echo killProcess not implemented!	
+	#echo $'ps -ef | grep $1'
+}
+
+# array of ports to close
+declare -a ports
+# ports we know we want to keep
+goodPorts=( 22 )
+# array of process ids
+declare -a pids
+
+# get sudo password
+if [[ $UID != 0 ]]; then
+    echo "Please run this script with sudo:"
+    echo "sudo $0 $*"
+	for i in {1..50} ;  do
+         echo ah ah ah, you didnt say the magic word
+	done
+    exit 1
+fi
+
+# make sure file exists
+if [ ! -d $file -a -e $file ] ; then
+	echo hold onto your butts .....
+	# read in port numbers from file
+    readFile
+	
+	valid=1 #boolean to check if a port is valid
+	# check to see if port number is valid (ex ssh port can't be closed)
+	echo
+	echo **attempting to close ${#ports[*]} ports
+	for i in ${ports[*]} ; do
+		# echo this is the value of i: $i
+		checkValid $i
+		valid=$?
+		# echo this is the value of valid: $valid
+		if [ $valid == 0 ] ; then
+			# create iptable rule
+			iptables -I INPUT -p tcp --dport $i -j DROP
+
+			# find port process and kill it
+			# NEED TO IMPLEMENT PORT PROCESS KILLING CODE!!!!
+			# congragulate the user
+			echo port $i is closed
+		else
+			echo !  ! $i is invalid
+			# no further action required
+		fi
+	done
+	# exit statements
+	echo
+	echo **listing table rules 
+	iptables -L INPUT -n --line-numbers
+
+	echo
+	echo **listing open ports
+	netstat -pln
+else
+	# file doesn't exist, agrivate the user
+	echo $file isnt valid. 
+fi
+
