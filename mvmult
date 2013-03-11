@@ -7,7 +7,7 @@
 # parameter 3: file expression
 #
 # AUTHOR: jupitersnarwal 02/10/13
-# VERSION 1.1
+# VERSION 1.2
 #
 # If by some magic you have obtained a copy of this script,
 # you may modify and redistribute it as you see fit.
@@ -20,6 +20,17 @@
 DIRECTORY=$1
 DESTINATION=$2
 EXPRESSION=$3
+
+if [ -z $DIRECTORY ] ; then
+	echo directory not specified.
+	echo exiting
+	exit
+fi
+if [ -z $DESTINATION ] ; then
+	echo destination directory not specified.
+	echo exiting
+	exit
+fi
 
 # check to see if the specified directory exists
 if [ -d $DIRECTORY ] ; then
