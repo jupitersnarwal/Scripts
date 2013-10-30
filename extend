@@ -1,0 +1,14 @@
+#!/usr/bin/bash
+# 
+# execute command to extend desktop to 
+# a second display.
+# 
+# author: jupiter
+# version: 1.0
+# last modified: 2013/07/26
+#
+
+echo "extending second display"
+# xrandr --output DP1 --off
+# xrandr --output DP2 --off
+xrandr --verbose --output VGA-1 --auto --right-of LVDS-1

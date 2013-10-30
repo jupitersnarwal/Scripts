@@ -1,0 +1,10 @@
+#!/bin/bash
+
+# Author: jupiter
+# Last edit: 2013/10/26
+
+ls -l /dev/disk/by-id/*usb*
+
+if [ ! $? = 0 ] ; then
+	echo There are no devices connected	
+fi

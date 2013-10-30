@@ -1,0 +1,22 @@
+#!/bin/bash
+
+# Author: jupiter
+# Last edit: 2013/10/39
+# 
+# start the minecraft tekkit launcher
+# includes super modifications (superfasttime)
+
+echo starting tekkit client
+OPT=$1
+if [ -z $OPT ] ; then
+    echo  "no args. put args (norm || fast)"
+    exit 1
+elif [ "$OPT" == "norm" ] ; then
+    echo start tekkit normal
+    java -jar -Xmx3072M -Xms3072M ~/minecraft/TechnicLauncher.jar
+elif [ "$OPT" == "fast" ] ; then
+    echo start tekkit fast
+    java -Xmx1024M -Xms1024M -XX:+UseFastAccessorMethods -XX:+AggressiveOpts  -XX:+DisableExplicitGC -XX:+UseAdaptiveGCBoundary -XX:MaxGCPauseMillis=500 -XX:SurvivorRatio=16 -XX:+UseParallelGC -XX:UseSSE=3 -XX:ParallelGCThreads=2 -jar ~/minecraft/TechnicLauncher.jar
+else
+    exit 2
+fi

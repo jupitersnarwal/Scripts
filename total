@@ -1,0 +1,15 @@
+#!/usr/bin/perl
+#
+# count the number of lines in a file
+#
+# author: jupiter
+# version: 1.0
+# edit: 2013/07/12
+#
+# TODO usage 
+
+# read the contents of a file
+@lines = <STDIN>; # read standart input in list context 
+# chomp (@lines = <STDIN>); # read lines without new lines
+
+print "\n\n", $#lines, " lines\n\n";

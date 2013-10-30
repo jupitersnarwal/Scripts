@@ -1,0 +1,18 @@
+#!/bin/bash
+# 
+# merge the .Xresources file
+#
+# author: jupiter
+# version: 1.0
+# edit: 2013/07/12
+#
+
+XRES=${HOME}/.Xresources
+
+if [ -e ${XRES} ] ; then
+		echo "-->merging ${XRES}"
+		xrdb -merge ~/.Xresources
+		echo "-->done merging Xresources file"
+else
+		echo "--> ${XRES} does not exist"
+fi

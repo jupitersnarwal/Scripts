@@ -1,0 +1,107 @@
+#!/bin/bash
+
+# Author: jupiter
+# Last edit: 2013/10/29
+# Version: 1.2
+#
+# This script will display a new background every few minutes.
+# Put files in the dir $BKG_DIR. There is also the stipulation that
+# you must use *.jpg files. There is no real reason for this other
+# than convenience. You can change it if you want to.
+#
+# If you want to output the name of the background to anyting, there
+# is a file called "now_display" that holds the name of the current 
+# background; use this.
+#
+# WARNING: WHEN SELECTING WAIT TIMES, USE THE FOLLOWING:
+# * ONLY USE POSITIVE INTEGERS
+# * USE A LARGE NUMBER > 120
+# * DO NOT MIX IN CHARACTERS
+#
+
+# background folder
+BKG_DIR=~/pictures/bkg
+CURRENT=now_display
+CURRENT_DIR="${BKG_DIR}/$CURRENT"
+
+MIN_WAIT=0
+MAX_WAIT=5000
+WAIT=
+TOTAL_BKG=   
+
+function usage () {
+
+    echo "USAGE $0:"
+    echo "IF TIME IS SET TO 0, THE SCRIPT WILL DISPLAY A RANDOM "
+    echo "IMAGE AND PROMPTLY EXIT"
+    echo 
+    echo "Parameters:"
+    echo "  -w <sec>        wait time"
+    echo 
+}
+
+function count_bkg () {
+
+    TOTAL_BKG=`ls *.jpg | wc -l`
+    if [ -z $TOTAL_BKG ] || [ $TOTAL_BKG -eq 0 ] ; then
+        echo "NO FILES"
+        exit 1
+    fi
+}
+
+function random () {
+
+    NUM=$(( $RANDOM % $TOTAL_BKG + 1 ))
+}
+
+# MAIN
+while getopts "hw:r" OPTION ; do
+    case $OPTION in
+        h)
+            usage
+            exit 0
+            ;;
+        w)
+            WAIT=$OPTARG
+            ;;
+        ?)
+            usage
+            exit 1
+            ;;
+    esac
+done
+
+if [ -z $WAIT ] ; then
+    echo "NO WALLPAPER SPEED SET"
+    exit 1
+fi
+
+if [ $WAIT -lt $MIN_WAIT ] || [ $WAIT -gt $MAX_WAIT ] ; then
+    echo "BAD SPEED (PUT SPEED IN SECONDS)"
+    exit 2
+fi
+
+cd $BKG_DIR
+
+count_bkg
+
+cd $BKG_DIR
+while true ; do
+    i=0
+    random
+    for FILE in *.jpg ; do
+        if [ $i -eq $NUM ] ; then
+            break
+        fi
+        i=$((i + 1))
+    done
+
+    echo $FILE > $CURRENT
+    feh --bg-scale $FILE
+   
+    if [ $WAIT -eq 0 ] ; then
+        exit 1
+    fi
+
+    sleep $WAIT
+done
