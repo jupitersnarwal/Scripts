@@ -1,9 +1,11 @@
 #!/bin/bash
-# This script finds all running processes that have the 
-# imput regular expression
 #
-# Author: jupiter
-# Version 1.2
+# This script is intened for use with easily viewing processes
+#
+# author: jupiter
+# version: 1.1
+# edit: 2013/07/12
+#
 
 function showHelp () {
 	echo "$0 usage:"

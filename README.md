@@ -9,11 +9,3 @@ Users may modify and redistribute these scripts for free.
 
 This repo is a collection of useful and unuseful bash and lua scripts
 
-To use scripts anywhere without "./", create a "bin" folder in 
-your home directory and place the scripts in there.
-
-cpmult -- copy multiple files that contain a regular expression
-mvmult -- move multiple files that contain a regular expression
-flock  -- simple firewall port automation
-wrproc -- search running processes
-

@@ -1,4 +1,5 @@
 #!/bin/bash
+
 # This script moves larges numbers of files to a destination
 # folder based off of an expression
 #
@@ -6,7 +7,8 @@
 # parameter 2: destination folder
 # parameter 3: file expression
 #
-# AUTHOR: jupitersnarwal 02/10/13
+# AUTHOR: jupiter 
+# Last edit: 2013/10/02
 # VERSION 1.2
 #
 # If by some magic you have obtained a copy of this script,
