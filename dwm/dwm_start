@@ -1,0 +1,9 @@
+#!/bin/sh
+
+# Author: jupiter
+# Last modified: 2013/10/22
+#
+
+~/bin/dwm/dwm_status | while true; do
+    dwm > /dev/null 2>&1
+done

@@ -4,11 +4,26 @@
 # a second display.
 # 
 # author: jupiter
-# version: 1.0
-# last modified: 2013/07/26
+# version: 1.1
+# last modified: 2013/12/14
 #
 
-echo "extending second display"
+# force exit on error
+set -e
+
 # xrandr --output DP1 --off
 # xrandr --output DP2 --off
-xrandr --verbose --output VGA-1 --auto --right-of LVDS-1
+if [ $1 == "hdtv" ] ; then
+    echo "extending to $1 display"
+    xrandr --verbose --output VGA-1 --auto --right-of LVDS-1
+elif [ $1 == "std" ] ; then
+    echo "extending to second square display"
+    xrandr --verbose --output LVDS-1 --auto --rotate normal --output VGA-1 --auto --right-of LVDS-1
+elif [ $1 == "stat" ] ; then
+    xrandr
+elif [ $1 == "off" ] ; then
+    echo "killing second display"
+    xrandr --verbose --output VGA-1 --off --output LVDS-1 --auto
+else
+    echo "bad option"
+fi

@@ -1,0 +1,29 @@
+#!/bin/sh
+
+# Author: jupiter
+# Last modified: 2013/10/28
+#
+# This script will allow dwm to be restarted without exiting
+# any open windows or programs. Convenience is key!
+#
+
+# only run once. It's not that important, and it might eat up 
+# a lot of CPU. So let's give this a try.
+#HOMEDISK=`du -sh`
+
+# status bar shit
+conky | while read -r; do
+    BATT=$(LC_ALL=C acpi -b)
+    case $BATT in
+    *Discharging*)
+        BATT="${BATT#* * * }"
+        BATT="${BATT%%, *}"
+        ;;
+    *)
+        BATT="ON_AC"
+        ;;
+    esac
+    HOSTNAME=`cat /etc/hostname`
+    xsetroot -name "$REPLY[BAT/$BATT][$( date +"%F %R" )]"
+    sleep 1s
+done

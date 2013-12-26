@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Author: jupiter
-# Last edit: 2013/10/29
+# Last edit: 2013/11/10
 # Version: 1.2
 #
 # This script will display a new background every few minutes.
@@ -87,7 +87,7 @@ count_bkg
 
 cd $BKG_DIR
 while true ; do
-    i=0
+    i=1
     random
     for FILE in *.jpg ; do
         if [ $i -eq $NUM ] ; then
