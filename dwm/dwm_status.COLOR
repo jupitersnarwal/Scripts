@@ -18,7 +18,7 @@ conky | while read -r; do
         BATT_DISP="BAT/$CHAR"
         ;;
     *)
-        BATT_DISP="AC/$CHAR"
+        BATT_DISP="AC$CHAR"
         ;;
     esac
     #HOSTNAME=`cat /etc/hostname`
