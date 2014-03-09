@@ -1,11 +1,21 @@
 #!/bin/bash
+# warning! this script can fuck your shit up!
+# so use with caution!
+echo "this script will rename all your files to numbers."
+echo "are you ok with that [y/n]?"
+read ANS
 
-x=1
-for f in *
-do
-    if [ "$f" != "change_name.sh" ]; then
-       new_name=`printf "%02d.jpg" $x`
-       mv -v "$f" $new_name
-       x=$((x+1))
-    fi
-done
+if [ $ANS == 'y' ] ; then
+    echo "renaming files"; sleep 10
+    x=1
+    for f in *
+    do
+        if [ "$f" != "change_name.sh" ]; then
+            new_name=`printf "%02d.png" $x`
+            mv -v "$f" $new_name
+            x=$((x+1))
+        fi
+    done
+else
+    exit 1;
+fi

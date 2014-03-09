@@ -1,0 +1,143 @@
+#!/bin/bash
+
+# detachable:
+# streamline and optimize session usage for program detachment
+#
+# author: jupiter
+# version 0.1
+# last modified: 2014_03_09
+#
+
+SESSIONS="tmux list-session"
+SESSION_NAME=
+
+TOTAL_SESSION=
+TO_RUN=
+
+function usage () {
+
+    echo -e "usage $0 args
+NOTES:
+\t\tuse \"ctrl-b d\" to detach from a detachable
+\nREQUIRED:
+-p\t\tprogram/script/command to perform
+-n\t\tdetachable name
+\nOPTIONAL:
+-a\t\tattach to a running detachable
+  \t\t<name>
+-d\t\tdelete a running detachable
+-D\t\tdelete all running detachables
+-l\t\tlist running detachables
+-h\t\tdisplay useage"
+    exit 0
+}
+
+function get_total_sessions () {
+
+    $SESSIONS > /dev/null 2>&1
+    if [ $? -eq 0 ] ; then
+       TOTAL_SESSION=`$SESSIONS | wc -l`
+    elif [ $? -eq 1 ] ; then
+       TOTAL_SESSION=0
+    fi
+}
+
+function attach_session () {
+
+    get_total_sessions
+    if [[ $TOTAL_SESSION -gt 0 ]] && [ ! -z $SESSION_NAME ] ; then
+        tmux attach -t $SESSION_NAME
+        exit 0
+    else
+        echo "cannot attach to detachable: $SESSION_NAME"
+        echo "it probably doesn't exist"
+        exit 1
+    fi
+}
+
+function list_sessions () {
+
+    get_total_sessions
+    echo "--> listing running detachables"
+    echo -e "\ttotal detachables: $TOTAL_SESSION"
+    echo -e "\tcurrent detachables:"
+    if [[ $TOTAL_SESSION -gt 0 ]] ; then
+        $SESSIONS
+    else
+        echo -e "there are currently no detachables running"
+    fi
+
+    exit 0
+}
+
+function create_new_session () {
+
+    if [[ ! -z $SESSION_NAME ]]  && [[ ! -z $TO_RUN ]] ; then
+        echo -e "\n--> placing \n$TO_RUN\n in detachable"
+        tmux new-session -s $SESSION_NAME -d "$TO_RUN"
+        TOTAL_SESSION=$(( $TOTAL_SESSION + 1 ))
+        echo $TOTAL_SESSION
+    else
+        usage
+    fi
+
+    return
+}
+
+function delete_session () {
+
+    echo "deleting session $SESSION_NAME"
+    tmux kill-session -t $SESSION_NAME
+    get_total_sessions
+    return
+}
+
+function delete_all_sessions () {
+
+    for LINE in `$SESSIONS | cut -d ":" -f1` ; do
+        SESSION_NAME=$LINE
+        delete_session
+        continue
+    done
+    exit 1
+}
+
+if [ $# -eq 0 ] ; then
+    usage
+fi
+
+while getopts "hlDp:n:a:d:" OPTION ; do
+    case $OPTION in
+        h)
+            usage
+            ;;
+        l)
+            list_sessions
+            ;;
+        D)
+            delete_all_sessions
+            ;;
+        p)
+            TO_RUN=$OPTARG
+            ;;
+        n)
+            SESSION_NAME=$OPTARG
+            ;;
+        a)
+            SESSION_NAME=$OPTARG
+            attach_session
+            ;;
+        d)
+            SESSION_NAME=$OPTARG
+            delete_session
+            exit 0
+            ;;
+        ?)
+            usage
+            ;;
+    esac
+done
+
+get_total_sessions
+create_new_session
+exit 0

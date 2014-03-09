@@ -1,0 +1,186 @@
+#!/bin/bash
+#
+# backup files to remote server
+#
+# TODO:
+# create function to copy to local from server
+# create function to execute remobkp command on remote server
+# add option to disable tar
+# create function for disc image backups
+#   * backup disc
+#   * retrive and apply image
+# doesn't like file paths with "\" it will error out
+# doesn't like file path directories that end with "/"
+#
+# author: jupiter
+# version: 0.1
+# last modified: 2014_03_06
+#
+
+set -e
+
+BKP_DIR=
+BKP_NAME=
+HOST_DIR=
+HOST_USR=
+HOSTNAME=
+TRANS_TYPE=file
+
+USEGZ=false
+
+function usage () {
+
+    echo -e "usage $0 <-d dir> -u user -H host -D dir
+\t-d        directory to backup
+\t-u        user of remote host
+\t-H        hostname/ip address of remote host
+\t-D        remote host directory
+\t-h        display usage
+\t-t        transfer type
+\t\t<offsite|file>\n"
+\t-g        use gunzip compression
+    exit 0
+}
+
+function confirm () {
+
+    echo -e "WARNING!\n\tThere is a good chance that you're an ass and are going to fuck something up on your remote host."
+    echo "Would you like to continue(y/n)?"
+    read ANS
+
+    if [ $ANS == "y" ] ; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+function host_up () {
+
+    echo "--> checking host $HOSTNAME status"
+    sudo arping -c 3 $HOSTNAME > /dev/null 2>&1
+    if [ ! $? == 0 ] ; then
+        echo -e "host $HOSTNAME is down\nexiting..."
+        exit 1
+    fi
+
+    echo -e "--> host $HOSTNAME is up!"
+    return 0
+}
+
+function validate_args () {
+
+    echo "--> validating arguments"
+
+    host_up
+    check_dir
+}
+
+function check_dir () {
+
+    # check directory
+    if [ ! -z $HOST_DIR ] && [ $TRANS_TYPE == "offsite" ] ; then
+        if ! (ssh $HOST_USR@$HOSTNAME "[ -d $HOST_DIR ]" > /dev/null 2>&1) ; then
+            echo "--> remote dir $HOST_DIR does not exist"
+            echo "would you like to create it?(y/n)"
+            read ANS
+            if [ $ANS == "y" ] ; then
+                make_remote_dir
+            else
+                exit 1
+            fi
+        else
+            echo "--> remote dir $HOST_DIR exists!"
+        fi
+    elif [ -z $HOST_DIR ] && [ $TRANS_TYPE == "file" ] ; then
+        echo "no host directory specified; skipping"
+    else
+        echo ERROR: no host directory specified or using transport type \"file\" with option \"-D\"
+        exit 1
+    fi
+}
+
+function make_remote_dir () {
+
+    ssh $HOST_USR@$HOSTNAME "mkdir -p $HOST_DIR" > /dev/null 2>&1
+}
+
+function transfer () {
+
+    confirm
+    if [ $? -eq 0 ] ; then
+        echo -e "!! starting transfer"
+        if [ $TRANS_TYPE == "offsite" ] ; then
+            transfer_offsite
+        elif [ $TRANS_TYPE == "file" ] ; then
+            transfer_file
+        else
+            echo "ERROR: bad transfer type"
+            exit 1
+        fi
+    fi
+}
+
+# keep tared
+function transfer_offsite () {
+
+    SSH_CMD="ssh -C $HOST_USR@$HOSTNAME cat - > $HOST_DIR/${BKP_NAME}"
+
+    echo "--> offsite transfer begin"
+    if [ $USEGZ == true ] ; then
+        echo "--> using gunzip compression"
+        tar czfv - ${BKP_DIR} | ${SSH_CMD}.tar.gz
+        #tar czfv - ${BKP_DIR} | ssh -C $HOST_USR@$HOSTNAME "cat - > $HOST_DIR/${BKP_NAME}.tar.gz"
+    else
+        echo "--> gunzip compression is disabled"
+        cat ${BKP_DIR} | ${SSH_CMD}
+    fi
+
+    echo "--> done!"
+}
+
+# untar when done
+# THIS WILL COPY EXACTLY!! SO USE WITH CAUTION
+function transfer_file () {
+
+    echo "--> offsite transfer begin"
+    tar czfv - $BKP_DIR | ssh -C $HOST_USR@$HOSTNAME "tar xzfv -"
+    echo "--> done!"
+}
+
+if [ $# -eq 0 ] ; then
+    usage
+fi
+
+while getopts "hgd:u:H:D:t:" OPTION ; do
+    case $OPTION in
+        h)
+            usage
+            ;;
+        d)
+            BKP_DIR=$OPTARG
+            BKP_NAME=${BKP_DIR##*/}
+            ;;
+        u)
+            HOST_USR=$OPTARG
+            ;;
+        H)
+            HOSTNAME=$OPTARG
+            ;;
+        D)
+            HOST_DIR=$OPTARG
+            ;;
+        t)
+            TRANS_TYPE=$OPTARG
+            ;;
+        g)
+            USEGZ=true
+            ;;
+        ?)
+            usage
+            ;;
+    esac
+done
+
+validate_args
+transfer

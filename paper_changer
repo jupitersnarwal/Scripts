@@ -28,6 +28,7 @@ MIN_WAIT=0
 MAX_WAIT=5000
 WAIT=
 TOTAL_BKG=   
+SLP_PID=
 
 function usage () {
 
@@ -98,7 +99,7 @@ while true ; do
 
     echo $FILE > $CURRENT
     feh --bg-scale $FILE
-   
+
     if [ $WAIT -eq 0 ] ; then
         exit 1
     fi
